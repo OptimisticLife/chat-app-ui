@@ -44,12 +44,14 @@ async function fetchUsers(): Promise<Array<UsersType> | string> {
   }
 }
 function UserList() {
-  const [users, setUsers] = useState<Array<UsersType>>([]);
+  // const [users, setUsers] = useState<Array<UsersType>>([]);
   const [status, setStatus] = useState<string | null>(null);
-  const { setActiveUser, onlineUsers } = useContext(ChatContext);
+  const { setActiveUser, onlineUsers, users, setUsers, notifications } =
+    useContext(ChatContext);
   const { loggedUser } = useContext(AuthContext);
 
   useEffect(() => {
+    console.log("incoming notifications", notifications);
     try {
       fetchUsers().then((data: string | Array<UsersType>) => {
         console.log("Fetched users:", data);
@@ -65,12 +67,12 @@ function UserList() {
       console.error("Error fetching users:", err);
       setStatus("Error fetching users");
     }
-  }, []);
+  }, [notifications, setUsers]);
   return (
     <div className="user-list-container">
       {/* <p className="info side-headings">Private and Group Chats</p> */}
 
-      {users.length > 0 ? (
+      {users && users.length > 0 ? (
         <>
           <ul className="user-list">
             {users.map((user) => (
@@ -89,6 +91,12 @@ function UserList() {
                 <p className="user-name">
                   {user.name}
                   {loggedUser && loggedUser.id === user.id && "(You)"}
+                  {notifications[user.id] &&
+                    notifications[user.id].msgCount > 0 && (
+                      <span className="material-symbols-outlined notification">
+                        notifications
+                      </span>
+                    )}
                 </p>
               </li>
             ))}

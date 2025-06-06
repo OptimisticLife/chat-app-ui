@@ -11,14 +11,13 @@
   --bg-color: rgb(14, 13, 13);
   --bg-secondary-color: rgb(26, 24, 24);
   --text-color: #fff;
-  --app-theme-primary: #757dd4;
-  --app-theme-seconday: #4e8cff;
+  --app-theme-primary: #4e8cff;
+  --app-theme-seconday: #757dd4;
   --input-border-color: #212122;
-  --seperator-color: #212122;
+  --seperator-color: #121213;
   --alert-msg-color: #ff0000;
   --success-msg-color: #1cda75;
   --shaded-text-color: #9a9898;
-  /* line-height: 1.5; */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -95,6 +94,7 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 15px;
 }
 
 h1 {
@@ -180,10 +180,10 @@ body {
     --bg-color: rgb(255, 255, 255);
     --bg-secondary-color: rgb(238, 236, 236);
     --text-color: #000;
-    --app-theme-primary: #757dd4;
-    --app-theme-seconday: #4e8cff;
+    --app-theme-primary: #4e8cff;
+    --app-theme-seconday: #757dd4;
     --input-border-color: #212122;
-    --seperator-color: #bdbdc1;
+    --seperator-color: #eaeaec;
     --alert-msg-color: #ff0000;
     --success-msg-color: #36d882;
     --shaded-text-color: #878585;

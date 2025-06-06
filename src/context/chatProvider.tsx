@@ -3,6 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import { ChatContext } from "./chatContext";
 import { AuthContext } from "./authContext";
 import { updateChatDataToServer, fetchChatDataFromServer } from "../utlity";
+import NotificationSound from "./../assets/notification_sound.mp3";
+
+const apiUrl = import.meta.env.VITE_API_URL;
 
 type UserPresenceType = {
   users: string[];
@@ -29,26 +32,57 @@ export type savedMessageType = {
 };
 
 let socket: WebSocket | null = null;
-const apiUrl = import.meta.env.VITE_API_URL;
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [activeUser, setActiveUser] = useState<{
     id: string;
     name: string;
   } | null>(null);
+
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const [chatData, setChatData] = useState<Record<string, savedMessageType[]>>(
     {}
   );
+  const [users, setUsers] = useState<Array<{
+    id: string;
+    name: string;
+  }> | null>(null);
+
+  const [notifications, setNotifications] = useState<
+    Record<string, { msgCount: number }>
+  >({});
 
   const { loggedUser } = useContext(AuthContext);
 
+  const activeUserRef = useRef(activeUser);
+
   const chatDataRef = useRef(chatData);
+
   useEffect(() => {
     chatDataRef.current = chatData;
   }, [chatData]);
 
-  // ✅ Fetch chat data when loggedUser is available
+  useEffect(() => {
+    activeUserRef.current = activeUser;
+  }, [activeUser]);
+
+  useEffect(() => {
+    if (
+      activeUserRef.current?.id &&
+      activeUserRef.current?.id !== undefined &&
+      activeUserRef.current &&
+      notifications[activeUserRef.current.id]?.msgCount > 0
+    ) {
+      setNotifications((prevNotifications) => ({
+        ...prevNotifications,
+        ...(activeUserRef.current?.id
+          ? { [activeUserRef.current.id]: { msgCount: 0 } }
+          : {}),
+      }));
+    }
+  }, [activeUser, notifications]);
+
+  // Fetch chat data when loggedUser is available
   useEffect(() => {
     if (!loggedUser?.id) return;
 
@@ -56,7 +90,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     fetchChatDataFromServer(loggedUser.id).then((data) => {
       if (isMounted && data) {
-        console.log("✅ Chat data loaded in provider:", data);
+        console.log("Chat data loaded in provider:", data);
         setChatData(data);
       }
     });
@@ -66,7 +100,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
   }, [loggedUser?.id]);
 
-  // ✅ WebSocket connection
+  // WebSocket connection
   useEffect(() => {
     if (!loggedUser?.id) return;
 
@@ -84,6 +118,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (messageData.type === "chat" && messageData.chatMessage) {
+        const notificationSound = new Audio(NotificationSound);
+        notificationSound.volume = 0.8;
+
         const chatMessage = messageData.chatMessage;
         if (chatMessage.fromUserId) {
           updateChatState(
@@ -92,15 +129,30 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             chatMessage.fromUserId
           );
         }
+
+        console.log("details, ", chatMessage, activeUser);
+
+        // Update notifications based on active users on chat..
+        if (
+          chatMessage.fromUserId !== undefined &&
+          chatMessage.fromUserId !== activeUserRef.current?.id
+        ) {
+          console.log("actually am reaching here...");
+          notificationSound.play().catch((err) => {
+            console.error("Audio play error:", err);
+          });
+          setNotifications((prev) => {
+            return {
+              ...prev,
+              [chatMessage.fromUserId as string]: {
+                msgCount: prev.details?.msgCount
+                  ? prev.details.msgCount + 1
+                  : 1,
+              },
+            };
+          });
+        }
       }
-    };
-
-    socket.onclose = () => {
-      console.log("WebSocket disconnected");
-    };
-
-    socket.onerror = (err) => {
-      console.error("WebSocket error:", err);
     };
 
     return () => {
@@ -108,6 +160,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       socket = null;
     };
   }, [loggedUser?.id]);
+
+  useEffect(() => {
+    console.log("notifications after update", notifications);
+  }, [notifications]);
 
   // ✅ Save chat data on unmount/logout
   useEffect(() => {
@@ -155,9 +211,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       try {
         const chatDataString = JSON.stringify(chatDataRef.current);
         await updateChatDataToServer(chatDataString, loggedUser.id);
-        console.log("✅ Chat data saved on logout.");
+        console.log("Chat data saved on logout.");
       } catch (err) {
-        console.error("❌ Failed to save chat data on logout:", err);
+        console.error(" Failed to save chat data on logout:", err);
       }
     }
     // Proceed with actual logout flow...
@@ -174,6 +230,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setChatData,
         sendChatMessage,
         handleLogout,
+        users,
+        setUsers,
+        notifications,
       }}
     >
       {children}

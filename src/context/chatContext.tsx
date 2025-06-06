@@ -19,6 +19,11 @@ type ChatContextType = {
     React.SetStateAction<Record<string, savedMessageType[]>>
   >;
   handleLogout: () => Promise<void>;
+  users: Array<{ id: string; name: string }> | null;
+  setUsers: React.Dispatch<
+    React.SetStateAction<Array<{ id: string; name: string }> | null>
+  >;
+  notifications: Record<string, { msgCount: number }>;
   // Optional setChatData for updating chat data
 };
 
@@ -31,4 +36,7 @@ export const ChatContext = createContext<ChatContextType>({
   chatData: {},
   setChatData: () => {},
   handleLogout: async () => {},
+  users: [],
+  setUsers: () => {},
+  notifications: {},
 });

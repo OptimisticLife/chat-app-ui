@@ -1,11 +1,13 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { ChatContext } from "../context/chatContext";
 import type { savedMessageType } from "../context/chatProvider";
 import { fetchChatDataFromServer } from "../utlity";
 import { AuthContext } from "../context/authContext";
+import ChatInput from "./chatInput";
+
+const memoizedUser: Record<string, string> = {};
 
 export default function Chats() {
-  const [typedMsg, setTypedMsg] = useState<string>("");
   const { loggedUser } = useContext(AuthContext);
   const {
     activeUser,
@@ -14,27 +16,29 @@ export default function Chats() {
     sendChatMessage,
     chatData,
     setChatData,
+    users,
   } = useContext(ChatContext);
 
+  function fetchUserName(userId: string): string | null {
+    if (memoizedUser[userId]) return memoizedUser[userId];
+    const user = users?.find((user) => user.id === userId);
+    if (user) {
+      memoizedUser[userId] = user.name;
+      return user.name;
+    }
+    return null;
+  }
+
   useEffect(() => {
-    console.log("Fetching chat data from server starts....");
     fetchChatDataFromServer(loggedUser?.id || "").then((data) => {
-      if (data) {
-        console.log("Chat data fetched successfully:", data);
-        if (setChatData) {
-          setChatData({ ...data });
-        } else {
-          console.log("setter is not availablex..");
-        }
-      } else {
-        console.log("No chat data found for the user.");
+      if (data && setChatData) {
+        setChatData({ ...data });
       }
     });
   }, []);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // Log active user change
   useEffect(() => {
     if (activeUser) {
       console.log(`Active user: ${activeUser.name}`);
@@ -43,7 +47,6 @@ export default function Chats() {
     }
   }, [activeUser]);
 
-  // ✅ Scroll to bottom after chat messages render
   useEffect(() => {
     const activeUserId = activeUser?.id;
     if (chatContainerRef.current && activeUserId && chatData[activeUserId]) {
@@ -54,10 +57,12 @@ export default function Chats() {
     }
   }, [activeUser?.id, chatData]);
 
-  // Render single message
   function renderMessages(msgData: savedMessageType) {
     const { id, userId, timeStamp, msg } = msgData;
-    const senderName = userId === activeUser?.id ? "sender" : "You";
+    const isLoggedUser = userId === loggedUser?.id;
+    const senderName =
+      fetchUserName(userId) ?? (userId === activeUser?.id ? "sender" : "You");
+
     const formattedTime = new Date(timeStamp).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -65,43 +70,24 @@ export default function Chats() {
 
     return (
       <div
-        className={`chat-message ${
-          senderName === "You" ? "msg-right-aligned" : ""
-        }`}
+        className={`chat-message ${isLoggedUser ? "msg-right-aligned" : ""}`}
         key={id}
       >
+        <div className="chat-message-header">
+          <span className="message-sender">{senderName}</span>
+          <span>|</span>
+          <span className="message-time">{formattedTime}</span>
+        </div>
+
         <div
           className={`chat-message-content ${
-            senderName === "You" ? "logged-user-msg" : ""
-          }  `}
+            isLoggedUser ? "logged-user-msg" : ""
+          }`}
         >
           <p className="message-text">{msg}</p>
-          <span className="message-time">{formattedTime}</span>
         </div>
       </div>
     );
-  }
-
-  function handleChatSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (typedMsg.trim() !== "" && activeUser) {
-      sendChatMessage(activeUser.id, typedMsg);
-      setTypedMsg("");
-    }
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); // Prevent new line
-      if (typedMsg.trim() !== "" && activeUser) {
-        sendChatMessage(activeUser.id, typedMsg);
-        setTypedMsg("");
-      }
-    }
-  }
-
-  function inputTypeMsgHandler(event: React.ChangeEvent<HTMLTextAreaElement>) {
-    setTypedMsg(event.target.value);
   }
 
   return (
@@ -139,24 +125,7 @@ export default function Chats() {
           </div>
 
           {onlineUsers.includes(activeUser.id) ? (
-            <form
-              className="active-user-chat-input"
-              onSubmit={handleChatSubmit}
-            >
-              <textarea
-                placeholder="Type a message..."
-                className="chat-input"
-                onChange={inputTypeMsgHandler}
-                value={typedMsg}
-                autoFocus
-                onKeyDown={handleKeyDown}
-              />
-              <button type="submit" className="shallow-send-btn">
-                <span className="material-symbols-outlined chat-send-btn">
-                  send
-                </span>
-              </button>
-            </form>
+            <ChatInput onSend={(msg) => sendChatMessage(activeUser.id, msg)} />
           ) : (
             <p className="offline-restriction info">
               You can send messages only to online users.
