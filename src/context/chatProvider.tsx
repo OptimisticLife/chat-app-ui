@@ -29,6 +29,7 @@ export type savedMessageType = {
 };
 
 let socket: WebSocket | null = null;
+const apiUrl = import.meta.env.VITE_API_URL;
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [activeUser, setActiveUser] = useState<{
@@ -69,7 +70,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!loggedUser?.id) return;
 
-    socket = new WebSocket(`ws://localhost:3333?userId=${loggedUser.id}`);
+    socket = new WebSocket(`${apiUrl}?userId=${loggedUser.id}`);
 
     socket.onopen = () => {
       console.log("🔗 WebSocket connected");
