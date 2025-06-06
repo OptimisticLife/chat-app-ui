@@ -1,0 +1,191 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+*,
+*::after,
+*::before {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-color: rgb(14, 13, 13);
+  --bg-secondary-color: rgb(26, 24, 24);
+  --text-color: #fff;
+  --app-theme-primary: #757dd4;
+  --app-theme-seconday: #4e8cff;
+  --input-border-color: #212122;
+  --seperator-color: #212122;
+  --alert-msg-color: #ff0000;
+  --success-msg-color: #1cda75;
+  --shaded-text-color: #9a9898;
+  /* line-height: 1.5; */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: "Roboto Mono", monospace;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Common css */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  width: 300px;
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--input-border-color);
+  background-color: transparent;
+  letter-spacing: 0.2px;
+  color: var(--text-color);
+}
+
+input:active,
+input:focus,
+textarea:active,
+textarea:focus {
+  border-bottom: 1px solid var(--app-theme-primary);
+}
+
+textarea {
+  overflow: hidden;
+  resize: none !important;
+  padding: 0px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  font-size: 13px;
+  font-family: "Roboto Mono", monospace;
+}
+
+button {
+  width: 120px;
+  border: none;
+  outline: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 10px;
+  background-color: var(--app-theme-primary);
+  letter-spacing: 0.2px;
+  color: var(--text-color);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.App {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+.status {
+  color: var(--alert-msg-color);
+}
+
+.info {
+  color: var(--shaded-text-color);
+}
+
+.status-message {
+  font-size: 14px;
+  color: var(--shaded-text-color);
+}
+
+.section-title {
+  color: var(--app-theme-primary);
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.side-headings {
+  font-size: 17px;
+  margin-bottom: 1rem;
+}
+
+.info-link,
+.sender-name {
+  color: var(--app-theme-primary);
+}
+
+.info-link {
+  text-decoration: none;
+}
+
+.loader {
+  display: inline-block;
+  min-width: 14px !important;
+  height: 14px !important;
+  border: 3px solid var(--text-color);
+  border-top: 3px solid var(--app-theme-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Target the entire scrollbar */
+::-webkit-scrollbar {
+  width: 5px; /* vertical scrollbar width */
+  height: 5px; /* horizontal scrollbar height */
+}
+
+/* Track (background of the scrollbar) */
+::-webkit-scrollbar-track {
+  background: var(--app-theme-seconday);
+  border-radius: 10px;
+}
+
+/* Handle (draggable part) */
+::-webkit-scrollbar-thumb {
+  background: var(--app-theme-primary);
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--app-theme-primary);
+}
+
+/* Default styles (light) */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-color: rgb(255, 255, 255);
+    --bg-secondary-color: rgb(238, 236, 236);
+    --text-color: #000;
+    --app-theme-primary: #757dd4;
+    --app-theme-seconday: #4e8cff;
+    --input-border-color: #212122;
+    --seperator-color: #bdbdc1;
+    --alert-msg-color: #ff0000;
+    --success-msg-color: #36d882;
+    --shaded-text-color: #878585;
+  }
+}
